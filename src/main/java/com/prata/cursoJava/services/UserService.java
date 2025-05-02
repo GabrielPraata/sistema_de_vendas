@@ -2,8 +2,11 @@ package com.prata.cursoJava.services;
 
 import com.prata.cursoJava.entities.User;
 import com.prata.cursoJava.repositories.UserRepository;
+import com.prata.cursoJava.services.exception.DatabaseException;
 import com.prata.cursoJava.services.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +34,14 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResourceNotFoundException(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException(e.getMessage());
+        }
+
     }
 
     public User update(Long id, User obj) {
